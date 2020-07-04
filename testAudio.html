@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GFS Resonance Audio Test</title>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/resonance-audio/build/resonance-audio.min.js"></script>
+    <script src="node_modules/resonance-audio/build/resonance-audio.min.js"></script>
+
+    <script>
+        var laughX = 0.0;
+        var laughY = 0.0;
+        var laughZ = 0.0;
+
+
+        var x = 0.0;
+        var y = 0.0;
+        var z = 0.0;
+
+        // Create an AudioContext
+        let audioContext = new AudioContext();
+
+        // Create a (first-order Ambisonic) Resonance Audio scene and pass it
+        // the AudioContext.
+        let resonanceAudioScene = new ResonanceAudio(audioContext);
+
+        // Connect the scene’s binaural output to stereo out.
+        resonanceAudioScene.output.connect(audioContext.destination);
+
+        // Define room dimensions.
+        // By default, room dimensions are undefined (0m x 0m x 0m).
+        let roomDimensions = {
+            width: 4,
+            height: 4.5,
+            depth: 6.4,
+        };
+
+        // Define materials for each of the room’s six surfaces.
+        // Room materials have different acoustic reflectivity.
+        let roomMaterials = {
+            // Room wall materials
+            left: 'metal',
+            right: 'curtain-heavy',
+            front: 'curtain-heavy',
+            back: 'curtain-heavy',
+            // Room floor
+            down: 'grass',
+            // Room ceiling
+            up: 'grass',
+        };
+
+        // Add the room definition to the scene.
+        resonanceAudioScene.setRoomProperties(roomDimensions, roomMaterials);
+
+        /// -----------------  Laugh audio
+        // Create an AudioElement.
+        let audioElement = document.createElement('audio');
+
+        // Load an audio file into the AudioElement.
+        audioElement.src = 'translate_tts.wav';
+        audioElement.loop = true;
+        // Generate a MediaElementSource from the AudioElement.
+        let audioElementSource = audioContext.createMediaElementSource(audioElement);
+        // Add the MediaElementSource to the scene as an audio input source.
+        let source = resonanceAudioScene.createSource();
+        audioElementSource.connect(source.input);
+        // Set the source position relative to the room center (source default position).
+        source.setPosition(laughX, laughY, laughZ);
+        // source.setMaxDistance(3);
+
+        /// -----------------  Waterfall
+        // Create an AudioElement.
+        // let audioElement2 = document.createElement('audio');
+        // audioElement2.src = 'waterfall.wav';
+        // audioElement2.loop = true;
+        // let audioElementSource2 = audioContext.createMediaElementSource(audioElement2);
+        // let source2 = resonanceAudioScene.createSource();
+        // audioElementSource2.connect(source2.input);
+        // source2.setPosition(0,0,0);
+        // source2.setMaxDistance(3);
+
+
+        /// -----------------  Bird noises
+        // let audioElement3 = document.createElement('audio');
+        // audioElement3.src = 'bird.wav';
+        // audioElement3.loop = false;
+        // let audioElementSource3 = audioContext.createMediaElementSource(audioElement3);
+        // let source3 = resonanceAudioScene.createSource();
+        // audioElementSource3.connect(source3.input);
+        // source3.setPosition(0.5,0,1);
+        // source3.setMaxDistance(3);
+
+        // Play the audio.
+        audioElement.play();
+        // audioElement2.play();
+
+        // setInterval(()=>{
+        //     //randomly position bird  -1 to +1 x/y relative to the listeners location every 4 seconds
+        //     source3.setPosition(x + Math.random() * 2 - 1 ,y + Math.random() * 2 - 1,1);
+        //     audioElement3.play();
+        // },4000);
+
+        resonanceAudioScene.setListenerPosition(x,y,z);
+        window.addEventListener("keyup", function(event) {
+
+            // Move laugh audio source around when arrow keys pressed
+            if (event.which == 37) // left arrow key
+                {
+                    source.setPosition(laughX -= 0.10, laughY, laughZ);
+                }
+            if (event.which == 39) // right arrow key
+                {
+                    source.setPosition(laughX += 0.10, laughY, laughZ);
+                }
+            if (event.which == 38) // up arrow key
+                {
+                    source.setPosition(laughX , laughY += 0.10, laughZ);
+                }
+            if (event.which == 40) // down arrow key
+                {
+                    source.setPosition(laughX, laughY -= 0.10, laughZ);
+                }
+            if (event.which == 33) // page up arrow key
+            {
+                source.setPosition(laughX , laughY, laughZ += 0.10);
+            }
+            if (event.which == 34) // page down arrow key
+            {
+                source.setPosition(laughX, laughY, laughZ -= 0.10);
+            }
+            if (event.which == 32) // space key
+            {
+                laughX = 0;
+                laughY = 0;
+                laughZ = 0;
+                source.setPosition(laughX, laughY, laughZ);
+            }
+
+
+
+            // Move the listener left or right on A/D keys
+            if (event.which == 65){ //A
+                resonanceAudioScene.setListenerPosition(x-=0.1,y,z);
+            }
+            if (event.which == 68){ //D
+                resonanceAudioScene.setListenerPosition(x+=0.1,y,z);
+            }
+        }, this);
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
